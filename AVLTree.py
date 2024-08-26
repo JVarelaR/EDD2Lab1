@@ -1,13 +1,20 @@
 from typing import Any, Optional, Tuple
-import networkx as nx, matplotlib.pyplot as plt,tkinter as tk,numpy as np
+import networkx as nx, matplotlib.pyplot as plt,tkinter as tk,numpy as np,csv
+import random
 
 
 class Node:
 
-    def __init__(self, data: Any) -> None:
+    def __init__(self, data: Any,year: int,worldwideEarnings: float,domesticEarnings: float, foreignEarnings: float, domesticPercentEarnings: float, foreignPercentEarnings: float) -> None:
         self.data = data
         self.left: Optional["Node"] = None
         self.right: Optional["Node"] = None
+        self.year=year
+        self.worldwideEarnings=worldwideEarnings
+        self.domesticEarnings=domesticEarnings
+        self.foreignEarnings=foreignEarnings
+        self.domesticPercentEarnings=domesticPercentEarnings
+        self.foreignPercentEarnings=foreignPercentEarnings
         
     def balance(self) -> int:
         return BinaryTree(self.right).height() - BinaryTree(self.left).height()
@@ -260,8 +267,9 @@ class AVLT(BST):
     def __init__(self, root: Optional["Node"] = None) -> None:
         super().__init__(root)
     
-    def insert(self, data: Any) -> bool: #Insercion con autobalanceo
-        to_insert = Node(data)
+    def insert(self, node: Node) -> bool: #Insercion con autobalanceo
+        to_insert = node
+        data=node.data
         if self.root is None:
             self.root = to_insert
             return True
@@ -411,15 +419,27 @@ class AVLT(BST):
 
 #Arbol De Ejemplo
 arbol=AVLT()
-for i in range(100):
-    arbol.insert(i)
+
+with open("dataset_movies.csv",newline='') as f:
+    data = csv.reader(f,delimiter=',')
+    movies = list(data)
+
+for i in range(10):    #Se escogen elementos aleatorios de la lista de peliculas
+    e=random.randint(1,1000)
+    arbol.insert(Node(data=movies[e][0],
+                      year=int(movies[e][6]),
+                      worldwideEarnings=float(movies[e][1]),
+                      domesticEarnings=float(movies[e][2]),
+                      foreignEarnings=float(movies[e][4]),
+                      domesticPercentEarnings=float(movies[e][3]),
+                      foreignPercentEarnings=float(movies[e][5])))
 
 
 
 #Interfaz Grafica con TKinter
 root = tk.Tk()
 draw_button = tk.Button(root,text="Dibujar", command= lambda: arbol.print_tree(), font="Helvetica 15") #Boton Dibujar
-titulo = tk.Label(root, text="Administrador de Parqueadero",font="Marykate 35", fg="black").place(relx=0.5, rely=0.465, anchor=tk.CENTER)
+titulo = tk.Label(root, text="Peliculas",font="Marykate 35", fg="black").place(relx=0.5, rely=0.465, anchor=tk.CENTER)
 root.title("Inicio")
 root.config(width=1000,height=500)
 draw_button.place(relx=0.5, rely=0.8, anchor=tk.CENTER)

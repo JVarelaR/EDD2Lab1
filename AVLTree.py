@@ -1,5 +1,6 @@
 from typing import Any, Optional, Tuple
 import networkx as nx, matplotlib.pyplot as plt,tkinter as tk,numpy as np,csv
+from tkinter import messagebox
 import random
 
 
@@ -18,8 +19,6 @@ class Node:
         
     def balance(self) -> int:
         return BinaryTree(self.right).height() - BinaryTree(self.left).height()
-
-
 
 
 class BinaryTree:
@@ -143,10 +142,10 @@ class BinaryTree:
         positions[node.data] = np.array([x,y])
 
         # Se asignan coordenadas al hijo izquierdo
-        self.assign_positions(node.left, x + 2, y - distancia, distancia / 2,positions)
+        self.assign_positions(node.left, x - distancia, y - 2, distancia / 2,positions)
 
         # Se asignan coordenadas al hijo derecho
-        self.assign_positions(node.right, x + 2, y + distancia, distancia / 2,positions)
+        self.assign_positions(node.right, x + distancia, y - 2, distancia / 2,positions)
 
 
     def height(self) -> int:
@@ -173,7 +172,6 @@ class BinaryTree:
 
         return T
     
-
 
 class BST(BinaryTree):
 
@@ -250,13 +248,13 @@ class BST(BinaryTree):
             return True
         return False
 
-    def __pred(self, node: "Node") -> Tuple["Node", "Node", Optional["Node"]]:
+    def pred(self, node: "Node") -> Tuple["Node", "Node", Optional["Node"]]:
         p, pad = node.left, node
         while p.right is not None:
             p, pad = p.right, p
         return p, pad, p.left
 
-    def __sus(self, node: "Node") -> Tuple["Node", "Node", Optional["Node"]]:
+    def sus(self, node: "Node") -> Tuple["Node", "Node", Optional["Node"]]:
         p, pad = node.right, node
         while p.left is not None:
             p, pad = p.left, p
@@ -292,6 +290,8 @@ class AVLT(BST):
         p, pad = self.search(data)
         if p is not None:
             if p.left is None and p.right is None:
+                if p==self.root:
+                    self.root=None
                 if p == pad.left:
                     pad.left = None
                 else:
@@ -311,7 +311,7 @@ class AVLT(BST):
                 del p
             else:
                 if mode:
-                    pred, pad_pred, son_pred = self.__pred(p)
+                    pred, pad_pred, son_pred = self.pred(p)
                     p.data = pred.data
                     if p == pad_pred:
                         pad_pred.left = son_pred
@@ -319,13 +319,14 @@ class AVLT(BST):
                         pad_pred.right = son_pred
                     del pred
                 else:
-                    sus, pad_sus, son_sus = self.__sus(p)
+                    sus, pad_sus, son_sus = self.sus(p)
                     p.data = sus.data
                     if p == pad_sus:
                         pad_sus.right = son_sus
                     else:
                         pad_sus.left = son_sus
                     del sus
+            if pad is not None:
                 self.check_balance(pad)
             return True
         return False
@@ -423,9 +424,9 @@ arbol=AVLT()
 with open("dataset_movies.csv",newline='') as f:
     data = csv.reader(f,delimiter=',')
     movies = list(data)
-
-for i in range(10):    #Se escogen elementos aleatorios de la lista de peliculas
-    e=random.randint(1,1000)
+"""
+for i in range(30):    #Se escogen elementos aleatorios de la lista de peliculas
+    e=random.randint(1,3000)
     arbol.insert(Node(data=movies[e][0],
                       year=int(movies[e][6]),
                       worldwideEarnings=float(movies[e][1]),
@@ -433,16 +434,142 @@ for i in range(10):    #Se escogen elementos aleatorios de la lista de peliculas
                       foreignEarnings=float(movies[e][4]),
                       domesticPercentEarnings=float(movies[e][3]),
                       foreignPercentEarnings=float(movies[e][5])))
+"""
+
 
 
 
 #Interfaz Grafica con TKinter
-root = tk.Tk()
-draw_button = tk.Button(root,text="Dibujar", command= lambda: arbol.print_tree(), font="Helvetica 15") #Boton Dibujar
-titulo = tk.Label(root, text="Peliculas",font="Marykate 35", fg="black").place(relx=0.5, rely=0.465, anchor=tk.CENTER)
-root.title("Inicio")
-root.config(width=1000,height=500)
-draw_button.place(relx=0.5, rely=0.8, anchor=tk.CENTER)
-draw_button.config(bg="#A6A6A6", fg="black")
 
+def insert_movie(index: str) -> None:
+    if index.isdigit():
+        index=int(index)
+        if index>len(movies)-1:
+            messagebox.showerror(title="Error", message="El indice ingresado esta fuera del rango de peliculas.\nLa lista contiene "+str(len(movies)-1)+" peliculas.")
+        else:
+            arbol.insert(Node(data=movies[index][0],
+                      year=int(movies[index][6]),
+                      worldwideEarnings=float(movies[index][1]),
+                      domesticEarnings=float(movies[index][2]),
+                      foreignEarnings=float(movies[index][4]),
+                      domesticPercentEarnings=float(movies[index][3]),
+                      foreignPercentEarnings=float(movies[index][5])))
+            arbol.print_tree()
+    else:
+        messagebox.showerror(title="Error", message="El indice ingresado debe ser un numero entero positivo")
+    
+def delete_movie(title: str) ->None:
+    if arbol.delete(title):
+        arbol.print_tree()
+    else:
+        messagebox.showerror(title="Error", message="El titulo de la pelicula no se encuentra en el arbol")
+
+def show_root(frame):
+    frame.withdraw() 
+    root.deiconify()
+
+def show_window2(frame):
+    frame.withdraw() 
+    window2.deiconify()
+
+def show_window3(frame):
+    frame.withdraw() 
+    window3.deiconify()
+
+def show_window4(frame):
+    frame.withdraw() 
+    window4.deiconify()
+
+def show_window6(frame):
+    frame.withdraw() 
+    window6.deiconify()
+
+# Función para cerrar la aplicación
+def close_app():
+    root.destroy()
+    window2.destroy()
+    window3.destroy()
+
+# Primera ventana
+root = tk.Tk()
+root.title("Inicio")
+root.geometry("500x300")
+
+label1 = tk.Label(root, text="Peliculas", font=("Arial", 14))
+label1.pack(pady=20)
+
+button1 = tk.Button(root, text="Continuar", command=lambda: show_window2(root))
+button1.place(rely=0.7,relx=0.45)
+
+# Segunda ventana
+window2 = tk.Toplevel()
+window2.title("Funciones")
+window2.geometry("600x500")
+window2.withdraw()  # Esconde la ventana al inicio
+
+label2 = tk.Label(window2, text="Funciones", font=("Arial", 14))
+label2.pack(pady=20)
+
+button2_1 = tk.Button(window2, text="Inserción", command=lambda: show_window3(window2))
+button2_1.pack(pady=5)
+
+button2_2 = tk.Button(window2, text="Eliminación", command=lambda: show_window4(window2))
+button2_2.pack(pady=5)
+
+button2_3 = tk.Button(window2, text="Busqueda", command=lambda: print("En desarrollo"))
+button2_3.pack(pady=5)
+
+button2_4 = tk.Button(window2, text="Visualización", command=lambda: show_window6(window2))
+button2_4.pack(pady=5)
+
+# Tercera ventana
+window3 = tk.Toplevel()
+window3.title("Inserción")
+window3.geometry("600x300")
+window3.withdraw()
+
+label3 = tk.Label(window3, text="Ingrese el indice de la pelicula a insertar:", font=("Arial", 14))
+label3.pack(pady=20)
+
+entry3 = tk.Entry(window3, width=30)
+entry3.pack(pady=10)
+
+button3_1 = tk.Button(window3, text="Volver", command=lambda: show_window2(window3))
+button3_1.place(x=10,y=10)
+button3_2 = tk.Button(window3, text="Insertar", command=lambda: insert_movie(entry3.get()))
+button3_2.pack(pady=20)
+
+# Cuarta ventana
+window4 = tk.Toplevel()
+window4.title("Eliminación")
+window4.geometry("600x300")
+window4.withdraw()
+
+label4 = tk.Label(window4, text="Ingrese el nombre de la pelicula a eliminar:", font=("Arial", 14))
+label4.pack(pady=20)
+
+entry4 = tk.Entry(window4, width=30)
+entry4.pack(pady=10)
+
+button4_1 = tk.Button(window4, text="Volver", command=lambda: show_window2(window4))
+button4_1.place(x=10,y=10)
+button4_2 = tk.Button(window4, text="Eliminar", command=lambda: delete_movie(entry4.get()))
+button4_2.pack(pady=20)
+
+# Sexta ventana
+window6 = tk.Toplevel()
+window6.title("Visualización")
+window6.geometry("600x300")
+window6.withdraw()
+
+label6 = tk.Label(window6, text="Haga click en el boton para visualizar el arbol", font=("Arial", 14))
+label6.pack(pady=20)
+
+button6_1 = tk.Button(window6, text="Volver", command=lambda: show_window2(window6))
+button6_1.place(x=10,y=10)
+button6_2 = tk.Button(window6, text="Visualizar", command=lambda: arbol.print_tree())
+button6_2.pack(pady=20)
+
+
+# Inicia el bucle principal de la aplicación
 root.mainloop()

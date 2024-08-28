@@ -16,9 +16,6 @@ class Node:
         self.foreignEarnings=foreignEarnings
         self.domesticPercentEarnings=domesticPercentEarnings
         self.foreignPercentEarnings=foreignPercentEarnings
-        
-    def balance(self) -> int:
-        return BinaryTree(self.right).height() - BinaryTree(self.left).height()
 
 
 class BinaryTree:
@@ -149,12 +146,16 @@ class BinaryTree:
 
 
     def height(self) -> int:
+        """Escribir algoritmo no recursivo para la altura de un arbol"""
         return self.__height_r(self.root)
 
     def __height_r(self, node: Optional["Node"]) -> int:
         if node is None:
             return 0
         return 1 + max(self.__height_r(node.left), self.__height_r(node.right))
+    
+    def balance(self,node: "Node") -> int:
+        return self.__height_r(node.right)-self.__height_r(node.left)
 
     @staticmethod
     def generate_sample_tree() -> "BinaryTree":
@@ -334,8 +335,8 @@ class AVLT(BST):
     def check_balance(self, node: "Node"):
         p,pad=self.search(node.data)
         while pad is not None:
-            if pad.balance()==-2:
-                if p.balance()==-1:
+            if self.balance(pad)==-2:
+                if self.balance(p)==-1:
                     if pad==self.root:
                             self.root=self.simple_right_rotation(pad)
                     else:
@@ -344,7 +345,7 @@ class AVLT(BST):
                             grand.left=self.simple_right_rotation(pad)#Si un nodo tiene balance -2 y su hijo -1 se hace una rotacion simple derecha
                         else:
                             grand.right=self.simple_right_rotation(pad)
-                elif p.balance()==1:
+                elif self.balance(p)==1:
                     if pad==self.root:
                             self.root=self.double_left_right_rotation(pad)
                     else:
@@ -353,7 +354,7 @@ class AVLT(BST):
                             grand.left=self.double_left_right_rotation(pad)#Si un nodo tiene balance -2 y su hijo 1 se hace una rotacion doble izquierda derecha
                         else:
                             grand.right=self.double_left_right_rotation(pad)
-                elif p.balance()==0:
+                elif self.balance(p)==0:
                     if pad==self.root:
                             self.root=self.simple_right_rotation(pad)
                     else:
@@ -363,8 +364,8 @@ class AVLT(BST):
                         else:
                             grand.right=self.simple_right_rotation(pad)
                 return True
-            elif pad.balance()==2:
-                if p.balance()==-1:
+            elif self.balance(pad)==2:
+                if self.balance(p)==-1:
                     if pad==self.root:
                             self.root=self.double_right_left_rotation(pad)
                     else:
@@ -373,7 +374,7 @@ class AVLT(BST):
                             grand.left=self.double_right_left_rotation(pad)#Si un nodo tiene balance 2 y su hijo -1 se hace una rotacion doble derecha izquierda
                         else:
                             grand.right=self.double_right_left_rotation(pad)
-                elif p.balance()==1:
+                elif self.balance(p)==1:
                     if pad==self.root:
                             self.root=self.simple_left_rotation(pad)
                     else:
@@ -382,7 +383,7 @@ class AVLT(BST):
                             grand.left=self.simple_left_rotation(pad)#Si un nodo tiene balance 2 y su hijo 1 se hace una rotacion simple izquierda
                         else:
                             grand.right=self.simple_left_rotation(pad)
-                elif p.balance()==0:
+                elif self.balance(p)==0:
                     if pad==self.root:
                             self.root=self.simple_left_rotation(pad)
                     else:
@@ -424,9 +425,10 @@ arbol=AVLT()
 with open("dataset_movies.csv",newline='') as f:
     data = csv.reader(f,delimiter=',')
     movies = list(data)
+
 """
-for i in range(30):    #Se escogen elementos aleatorios de la lista de peliculas
-    e=random.randint(1,3000)
+for i in range(20):    #Se escogen elementos aleatorios de la lista de peliculas
+    e=random.randint(1,4000)
     arbol.insert(Node(data=movies[e][0],
                       year=int(movies[e][6]),
                       worldwideEarnings=float(movies[e][1]),
@@ -480,9 +482,9 @@ def show_window4(frame):
     frame.withdraw() 
     window4.deiconify()
 
-def show_window6(frame):
+def show_window5(frame):
     frame.withdraw() 
-    window6.deiconify()
+    window5.deiconify()
 
 # Función para cerrar la aplicación
 def close_app():
@@ -494,32 +496,28 @@ def close_app():
 root = tk.Tk()
 root.title("Inicio")
 root.geometry("500x300")
-
 label1 = tk.Label(root, text="Peliculas", font=("Arial", 14))
 label1.pack(pady=20)
-
 button1 = tk.Button(root, text="Continuar", command=lambda: show_window2(root))
 button1.place(rely=0.7,relx=0.45)
 
 # Segunda ventana
 window2 = tk.Toplevel()
+window2.protocol('WM_DELETE_WINDOW', lambda: root.destroy())
 window2.title("Funciones")
 window2.geometry("600x500")
 window2.withdraw()  # Esconde la ventana al inicio
-
 label2 = tk.Label(window2, text="Funciones", font=("Arial", 14))
 label2.pack(pady=20)
-
+button3_1 = tk.Button(window2, text="Volver", command=lambda: show_root(window2))
+button3_1.place(x=10,y=10)
 button2_1 = tk.Button(window2, text="Inserción", command=lambda: show_window3(window2))
 button2_1.pack(pady=5)
-
 button2_2 = tk.Button(window2, text="Eliminación", command=lambda: show_window4(window2))
 button2_2.pack(pady=5)
-
-button2_3 = tk.Button(window2, text="Busqueda", command=lambda: print("En desarrollo"))
+button2_3 = tk.Button(window2, text="Busqueda", command=lambda: show_window5(window2))
 button2_3.pack(pady=5)
-
-button2_4 = tk.Button(window2, text="Visualización", command=lambda: show_window6(window2))
+button2_4 = tk.Button(window2, text="Visualización",command=lambda: arbol.print_tree())
 button2_4.pack(pady=5)
 
 # Tercera ventana
@@ -527,13 +525,11 @@ window3 = tk.Toplevel()
 window3.title("Inserción")
 window3.geometry("600x300")
 window3.withdraw()
-
+window3.protocol('WM_DELETE_WINDOW', lambda: root.destroy())
 label3 = tk.Label(window3, text="Ingrese el indice de la pelicula a insertar:", font=("Arial", 14))
 label3.pack(pady=20)
-
 entry3 = tk.Entry(window3, width=30)
 entry3.pack(pady=10)
-
 button3_1 = tk.Button(window3, text="Volver", command=lambda: show_window2(window3))
 button3_1.place(x=10,y=10)
 button3_2 = tk.Button(window3, text="Insertar", command=lambda: insert_movie(entry3.get()))
@@ -544,31 +540,28 @@ window4 = tk.Toplevel()
 window4.title("Eliminación")
 window4.geometry("600x300")
 window4.withdraw()
-
+window4.protocol('WM_DELETE_WINDOW', lambda: root.destroy())
 label4 = tk.Label(window4, text="Ingrese el nombre de la pelicula a eliminar:", font=("Arial", 14))
 label4.pack(pady=20)
-
 entry4 = tk.Entry(window4, width=30)
 entry4.pack(pady=10)
-
 button4_1 = tk.Button(window4, text="Volver", command=lambda: show_window2(window4))
 button4_1.place(x=10,y=10)
 button4_2 = tk.Button(window4, text="Eliminar", command=lambda: delete_movie(entry4.get()))
 button4_2.pack(pady=20)
 
-# Sexta ventana
-window6 = tk.Toplevel()
-window6.title("Visualización")
-window6.geometry("600x300")
-window6.withdraw()
-
-label6 = tk.Label(window6, text="Haga click en el boton para visualizar el arbol", font=("Arial", 14))
-label6.pack(pady=20)
-
-button6_1 = tk.Button(window6, text="Volver", command=lambda: show_window2(window6))
-button6_1.place(x=10,y=10)
-button6_2 = tk.Button(window6, text="Visualizar", command=lambda: arbol.print_tree())
-button6_2.pack(pady=20)
+# Quinta ventana
+window5 = tk.Toplevel()
+window5.title("Busqueda")
+window5.geometry("600x300")
+window5.withdraw()
+window5.protocol('WM_DELETE_WINDOW', lambda: root.destroy())
+label5 = tk.Label(window5, text="Busqueda", font=("Arial", 14))
+label5.pack(pady=20)
+button5_1 = tk.Button(window5, text="Volver", command=lambda: show_window2(window5))
+button5_1.place(x=10,y=10)
+button5_2 = tk.Button(window5, text="Buscar", command=lambda: print("En desarrollo"))
+button5_2.pack(pady=20)
 
 
 # Inicia el bucle principal de la aplicación

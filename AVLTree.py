@@ -92,6 +92,8 @@ class BinaryTree:
                 q.append(p.right)
         print()
 
+    def levels_r(self) -> None:
+        """Escribir algoritmo recursivo para el recorrido por niveles de un arbol binario"""
 
     def nodes_and_edges(self) -> Tuple[Optional["list"], Optional["list"]]:
         nodes = []
@@ -146,7 +148,6 @@ class BinaryTree:
 
 
     def height(self) -> int:
-        """Escribir algoritmo no recursivo para la altura de un arbol"""
         return self.__height_r(self.root)
 
     def __height_r(self, node: Optional["Node"]) -> int:
